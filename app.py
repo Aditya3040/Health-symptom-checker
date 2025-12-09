@@ -10,7 +10,13 @@ def load_rules(file_path="symptom_rules.csv"):
     df["symptom"] = df["symptom"].str.lower().str.strip()
     return df
 
-rules = load_rules("symptom_rules.csv")  # Make sure CSV is in same folder
+rules = load_rules("symptom_rules.csv")
+
+# -----------------------------
+# Prepare Clean Symptom List
+# -----------------------------
+symptom_list = rules["symptom"].str.strip().str.lower().unique()
+symptom_list.sort()
 
 # -----------------------------
 # Risk Score Calculator
@@ -38,7 +44,7 @@ def check_symptom(symptom):
 # -----------------------------
 st.set_page_config(page_title="Health Symptom Checker", layout="wide")
 
-st.title("🩺 Health Symptom Checker (Advanced)")
+st.title("🩺 Health Symptom Checker (Professional)")
 st.write("A smart rule-based tool to understand your symptoms quickly.")
 
 col1, col2 = st.columns(2)
@@ -47,14 +53,14 @@ with col1:
     st.subheader("Enter Your Details")
     age = st.number_input("Age", 1, 100, 25)
     gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-    symptom = st.selectbox("Select Symptom", rules["symptom"].unique())
+    symptom = st.selectbox("Select Symptom", symptom_list)
     severity = st.slider("Symptom Severity (1 = low, 10 = high)", 1, 10)
 
 with col2:
     st.subheader("Symptom Description")
     st.info("Select a symptom and adjust severity to estimate risk level.")
 
-# Process
+# Process Button
 if st.button("Check Result"):
     cause, advice = check_symptom(symptom)
     risk = calculate_risk(severity, age)
