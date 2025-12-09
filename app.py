@@ -2,12 +2,14 @@ import streamlit as st
 import pandas as pd
 
 # -----------------------------
-# Load Rules
+# Load Rules Safely
 # -----------------------------
 @st.cache_data
 def load_rules(file_path="symptom_rules.csv"):
-    df = pd.read_csv(file_path)
-    df["symptom"] = df["symptom"].str.lower().str.strip()
+    # Load only required columns
+    df = pd.read_csv(file_path, usecols=["symptom", "cause", "advice"])
+    df = df.dropna(subset=["symptom"])  # remove rows with empty symptom
+    df["symptom"] = df["symptom"].str.strip().str.lower()  # clean symptoms
     return df
 
 rules = load_rules("symptom_rules.csv")
@@ -15,7 +17,7 @@ rules = load_rules("symptom_rules.csv")
 # -----------------------------
 # Prepare Clean Symptom List
 # -----------------------------
-symptom_list = rules["symptom"].str.strip().str.lower().unique()
+symptom_list = rules["symptom"].unique()
 symptom_list.sort()
 
 # -----------------------------
@@ -33,7 +35,7 @@ def calculate_risk(severity, age):
 # Symptom Checker Function
 # -----------------------------
 def check_symptom(symptom):
-    match = rules[rules["symptom"].str.contains(symptom.lower(), case=False)]
+    match = rules[rules["symptom"] == symptom.lower()]
     if not match.empty:
         row = match.iloc[0]
         return row["cause"], row["advice"]
